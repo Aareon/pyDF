@@ -1,21 +1,24 @@
-try:
+from configparser import ConfigParser
+import sys
 
+try:
     import pygame_sdl2
     pygame_sdl2.import_as_pygame()
-    import sys
-    #from pygame.locals import *
-    from loader import load_png
-    from configparser import ConfigParser
-except ImportError as err:
-    print("couldn't load module. %s" % (err))
-    sys.exit(2)
+except ImportError:
+    try: import pygame as pygame_sdl2
+    except ImportError:
+        raise
+
+from loader import load_png
+
 
 class Item(pygame_sdl2.sprite.Sprite):
     """ Item class, generic class for a sprite """
     def __init__(self, name, tw):
         self.tw = tw
         config = ConfigParser()
-        config.read_file(open('item.cfg'))
+        with open('item.cfg') as f:
+            config.read_file(f)
         sectionname = 'imagename' + str(self.tw)
         self.movable = True # set this to false to make unmovable items.
         self.selected = False
