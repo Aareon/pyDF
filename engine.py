@@ -1,27 +1,30 @@
-#!C:\python26\python.exe
+from collections import defaultdict
+import configparser
+import math
+import os
+import pickle
+from pprint import pprint
+import sys
+from time import time
+
+import cursor
+import ezmenu
+import gamemap
+from intro import Intro
+from job import Job
+import loader
+import mob
+from pathfinder import PathFinder
+
 try:
     import pygame_sdl2
     pygame_sdl2.import_as_pygame()
-    import sys
-    #from pygame.locals import *
-    from time import time
-    import pickle
-    from pprint import pprint
-    import loader
-    import mob
-    import gamemap
-    from job import Job
-    import math
-    import configparser, os
-    import cursor
-    import time
-    import ezmenu
-    from collections import defaultdict
-    from pathfinder import PathFinder
-    from intro import Intro
-except ImportError as err:
-    print("couldn't load module, %s" % (err))
-    sys.exit(2)
+except:
+    try: import pygame
+    except:
+        print("couldn't load pygame")
+        sys.exit(2)
+
 
 class engine:
     def __init__(self):
