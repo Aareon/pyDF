@@ -20,17 +20,21 @@ try:
     import pygame_sdl2
     pygame_sdl2.import_as_pygame()
 except:
-    try: import pygame
+    try: import pygame as pygame_sdl2
     except:
         print("couldn't load pygame")
         sys.exit(2)
+
+WHITE = (255, 255, 255)
+FPS = 60
 
 
 class engine:
     def __init__(self):
         self.running = True # set the game loop good to go
         config = configparser.ConfigParser()
-        config.read_file(open('main.cfg'))
+        with open('main.cfg') as f:
+            config.read_file(f)
         self.fsw = config.getint('main', 'fullscreenwidth')
         self.fsh = config.getint('main', 'fullscreenheight')
         self.ww = config.getint('main', 'windowedwidth')
@@ -39,14 +43,14 @@ class engine:
         self.mapw = config.getint('main', 'mapwidth')
         self.maph = config.getint('main', 'mapheight')
         self.fullscreen = config.getboolean('main', 'fullscreen')
-        self.paused = False
-        self.white = (255, 255, 255) # the colour :)
 
-        #fullscreen = False
-        self.FPS = 60
+        self.paused = False
+        self.white = WHITE # the colour :)
+
+        self.FPS = FPS
         pygame_sdl2.init()
         #setup the default screen size
-        if self.fullscreen == True:
+        if self.fullscreen:
             self.screen = pygame_sdl2.display.set_mode((self.fsw, self.fsh), pygame_sdl2.FULLSCREEN)
         else:
             self.screen = pygame_sdl2.display.set_mode((self.ww, self.wh), pygame_sdl2.RESIZABLE)
