@@ -1,10 +1,13 @@
-#! /usr/bin/env python
+try:
+    import pygame_sdl2
+    pygame_sdl2.import_as_pygame()
+except ImportError:
+    try: import pygame as pygame_sdl2
+    except ImportError:
+        raise
 
-import pygame_sdl2
-pygame_sdl2.import_as_pygame()
 #from pygame.locals import KEYDOWN
 class EzMenu:
-
     def __init__(self, options):
     #def __init__(self, *options):
         """Initialise the EzMenu! options should be a sequence of lists in the
@@ -19,8 +22,8 @@ class EzMenu:
         self.color = [0, 0, 0]
         self.hcolor = [255, 0, 0]
         self.height = len(self.options) * self.font.get_height()
-        for o in self.options:
-            text = o.name
+        for opt in self.options:
+            text = opt.name
             #text = o[0]
             ren = self.font.render(text, 1, (0, 0, 0))
             if ren.get_width() > self.width:
@@ -29,12 +32,12 @@ class EzMenu:
     def draw(self, surface):
         """Draw the menu to the surface."""
         i = 0
-        for o in self.options:
+        for opt in self.options:
             if i == self.selected:
                 clr = self.hcolor
             else:
                 clr = self.color
-            text = o.name
+            text = opt.name
             #text = o[0]
             ren = self.font.render(text, 1, clr)
             if ren.get_width() > self.width:
@@ -48,10 +51,10 @@ class EzMenu:
         """Update the menu and get input for the menu."""
         if event.type == pygame_sdl2.KEYDOWN:
             if event.key == pygame_sdl2.K_DOWN and keymods & pygame_sdl2.KMOD_LALT:
-                print("This is being called")
+                # print("This is being called")
                 self.selected += 1
             if event.key == pygame_sdl2.K_UP and keymods & pygame_sdl2.KMOD_LALT:
-                print("This is totally not being called")
+                # print("This is totally not being called")
                 self.selected -= 1
             if event.key == pygame_sdl2.K_RETURN:
                 self.result(self.options[self.selected])# execute
