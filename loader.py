@@ -1,13 +1,15 @@
+import os
+import sys
+import random
+
 try:
     import pygame_sdl2
     pygame_sdl2.import_as_pygame()
-    import random, sys
-    #import pygame.font
-    #from pygame.locals import *
-    import os
-except ImportError as err:
-    print("couldn't load module. %s" % (err))
-    sys.exit(2)
+except ImportError:
+    try: import pygame as pygame_sdl2
+    except ImportError:
+        raise
+
 
 def load_font(name, size):
     """Load up a font file, or try to use the default None(system font)"""
