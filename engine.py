@@ -136,7 +136,7 @@ class engine:
             elif event.type == pygame_sdl2.MOUSEBUTTONDOWN:
                 self.buttons[event.button] = event.pos
             elif event.type == pygame_sdl2.MOUSEMOTION:
-                dir(event)
+                # dir(event)
                 pprint(event)
                 self.motion = event.pos
                 #self.motion = event
@@ -159,8 +159,7 @@ class engine:
         self.handle_events()
         self.handle_mouse()
         self.handle_viewport()
-        if self.paused == False:
-            
+        if not self.paused:
             # build the queue
             self.mining()
             self.channel()
@@ -205,7 +204,7 @@ class engine:
         self.running = False
 
     def pausegame(self):
-        if self.paused == True:
+        if not self.paused:
             self.showmenu = False
             self.selectMode = False
             self.editmode = [ None, None ]
@@ -233,9 +232,9 @@ class engine:
                     for move in queue:
                         if len(self.m.successors(move)):
                             content = self.m.get_items(move[0], move[1], move[2])
-                            if content != None:
+                            if content is not None:
                                 for item in content:
-                                    if item.selected == True and item.inqueue == False:
+                                    if item.selected and not item.inqueue:
                                         item.inqueue = True
                                         self.queued_jobs.append(Job('MoveItem', move, dropoff))
                                         continue
@@ -249,7 +248,7 @@ class engine:
             queue = []
             if adjacent_open_tiles != []:
                 queue.append(coord)
-            if len(queue):
+            if len(queue) > 0:
                 dest = queue.pop(0)
                 #if self.m.checkEMapQueue(dest[0], dest[1], dest[2]) == True:
                 #   continue
@@ -270,12 +269,12 @@ class engine:
             inqueue = False
             if job: #check if the dorfs already have that job
                 for m in self.mobs:
-                    if m.job != None:
+                    if m.job is not None:
                         if m.job.name == job.name and m.job.move == job.move and m.job.dest == job.dest:
                             inqueue = True
                         continue
                 
-            if inqueue == False and job:
+            if not inqueue and job:
                 self.m.writeEMapQueue(job.dest[0], job.dest[1], job.dest[2], True)
                 self.queued_jobs.append(job)
                     
@@ -284,13 +283,13 @@ class engine:
         queue = []
         if adjacent_open_tiles != []:
             queue.append(coord)
-        if len(queue):
+        if len(queue) > 0:
             dest = queue.pop(0)
             #if self.m.checkEMapQueue(dest[0], dest[1], dest[2]) == True:
             #   continue 
             list_of_moves = self.m.successors(dest)
             for move in list_of_moves:
-                if len(self.m.successors(move)):
+                if len(self.m.successors(move)) > 0:
                     return Job('Mining', move, dest)
         return None
 
@@ -304,7 +303,7 @@ class engine:
                 self.room_tiles.append(item)
 
     def menu(self, menu_list):
-        if self.showmenu == False:
+        if not self.showmenu:
             self.currentmenu = ezmenu.EzMenu(menu_list)
             self.currentmenu.set_pos(self.menuOffset3[0], self.menuOffset3[1])
             self.currentmenu.set_font(self.arialFnt)
@@ -316,7 +315,7 @@ class engine:
         keymods = pygame_sdl2.key.get_mods()
         if event.key == ord('k'): # and self.selectmode == False:
             self.paused = True
-            if self.selectmode == False:
+            if not self.selectmode:
                 self.selectmode = True
             else:
                 self.selectmode = False
@@ -357,12 +356,12 @@ class engine:
                 pprint (self.testmode)
                 self.testmode = True
             else:
-                print("testing")
-                pprint (self.testmode)
+                # print("testing")
+                pprint(self.testmode)
                 self.testmode = False
                 self.room_tiles = []
 
-        elif event.key == ord('n') and self.testmode == True and self.selectmode == True:
+        elif event.key == ord('n') and self.testmode and self.selectmode:
             mapx = (self.selectcursor.position[0] + self.vpCoordinate[0]) / self.tw
             mapy = (self.selectcursor.position[1] + self.vpCoordinate[1]) / self.tw 
             if self.room_tiles == []:
@@ -385,7 +384,7 @@ class engine:
         #move the menu selector:
         elif (event.key == pygame_sdl2.K_UP or event.key == pygame_sdl2.K_DOWN) and (keymods & pygame_sdl2.KMOD_LALT and self.showmenu == True and self.currentmenu != None):
             self.currentmenu.update(event)
-        elif event.key == pygame_sdl2.K_RETURN and self.showmenu == True and self.currentmenu != None and self.selectmode == True:
+        elif event.key == pygame_sdl2.K_RETURN and self.showmenu and self.currentmenu is not None and self.selectmode:
             self.currentmenu.update(event)
 
         #Movement Keys l,r,u,d
@@ -449,7 +448,7 @@ class engine:
 
         #reset viewport 
         elif event.key == pygame_sdl2.K_F11 :
-            if self.fullscreen == False:
+            if not self.fullscreen:
                 pygame_sdl2.display.set_mode((self.fsw, self.fsh), pygame_sdl2.FULLSCREEN, 32)
                 newwidth = math.floor(int(0.8 * self.fsw) / self.tw)
                 newheight = math.floor(int(0.9 * self.fsh) / self.tw)
@@ -507,7 +506,7 @@ class engine:
 
     def handle_viewport(self):
         #Restrict Cursor Movement.   
-        if self.selectmode == True:
+        if self.selectmode:
             if self.selectcursor.position[0] < 0:
                 self.selectcursor.position[0] = 0
             if self.selectcursor.position[0] > self.m.numXTiles * self.tw:
@@ -522,7 +521,7 @@ class engine:
             #list = [['item1', 'data1'],['item2', 'data2'],['item3', 'data3']]
             self.mapvalue = self.m.checkMap(self.selectcursor.mapx, self.selectcursor.mapy, self.currentZlevel)
             self.tilecontent = self.m.checkMapContent(self.selectcursor.mapx, self.selectcursor.mapy, self.currentZlevel)
-            if self.tilecontent != None: 
+            if self.tilecontent is not None: 
                 self.menu(self.tilecontent)
             else:
                 self.showmenu = False
@@ -563,9 +562,9 @@ class engine:
     def idle_dwarves(self):
         counter = 0
         for mo in self.mobs:
-            if mo.job == None:
+            if mo.job is None:
              #   print "+1 idler"
-                counter = counter + 1
+                counter += 1
         return counter
     
     def move_mobs(self):
@@ -587,7 +586,7 @@ class engine:
                 
     def mob_logic(self):
         for mob in self.mobs:
-            if mob.job != None:
+            if mob.job is not None:
                 if mob.position == mob.job.move:
                     if mob.job.name == "Channeling":
                         #print "Channeling..."
@@ -649,18 +648,22 @@ class engine:
         self.m.drawMap(self.currentZlevel)
         self.finalmap = self.m.drawEMap(self.currentZlevel)
         self.screen.blit(self.arialFnt.render("Idle: " + str(self.idle_dwarves()), True, self.white), self.idleOffset)
+
         # Cursor
-        if self.selectmode == True:
+        if self.selectmode:
             self.finalmap.blit(self.selectcursor.image, self.selectcursor.position)
-            if self.testmode == True and self.room_tiles:
+            if self.testmode and self.room_tiles:
                 for pos in self.room_tiles:
                     self.finalmap.blit(self.selectcursor.image, [pos[0] * self.tw + self.vpCoordinate[0], pos[1] * self.tw + self.vpCoordinate[1]])
             self.screen.blit(self.arialFnt.render('value: ' + str(self.mapvalue), True, self.white), self.menuOffset)
             self.screen.blit(self.arialFnt.render('content: ' + str(self.tilecontent), True, self.white), self.menuOffset2)
-        if self.showmenu == True:
+
+        if self.showmenu:
             self.currentmenu.draw(self.screen)
-        if self.paused == True:
+
+        if self.paused:
             self.screen.blit(self.arialFnt.render('Paused', True, self.white), self.pauseDisplayOffset)
+
         if self.editmode != [ None, None ]:
             self.screen.blit(self.arialFnt.render('Digging: ' + str(self.editmode[1]), True, self.white), self.digTypeOffset)
 
@@ -676,8 +679,9 @@ class engine:
         pygame_sdl2.display.flip()
     
     def run(self):
-        if self.intro == True:
+        if self.intro:
             self.showIntro()
+
         while self.running:
             self.logic()
             self.render()
