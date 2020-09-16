@@ -1,22 +1,26 @@
+from collections import defaultdict
+import configparser
+from math import sqrt
+import noise
+import os
+import pickle
+from pprint import pprint
+import random
+from time import time
+
 try:
     import pygame_sdl2
     pygame_sdl2.import_as_pygame()
-    #from pygame.locals import *
-    from time import time
-    import pickle
-    from pprint import pprint
-    import loader
-    import mob
-    import random
-    from math import sqrt
-    import configparser, os
-    import maptile
-    import noise
-    import selected
-    from collections import defaultdict
-except ImportError as err:
-    print("couldn't load module, %s" % (err))
-    sys.exit(2)
+except ImportError:
+    try: import pygame as pygame_sdl2
+    except ImportError:
+        raise
+
+import loader
+import maptile
+import mob
+import selected
+
 
 class GameMap(object):
     """ Gamemap object aka the Grid """
@@ -32,7 +36,9 @@ class GameMap(object):
         self.tiledBG = pygame_sdl2.Surface((numXTiles * self.tw, numYTiles * tw)).convert()
 
         config = configparser.ConfigParser()
-        config.read_file(open('gamemap.cfg'))
+        with open('gamemap.cfg') as f:
+            config.read_file(f)
+        
         self.zlevels = config.getint('map', 'zlevels')
         self.currentZlevel = 0
         if not pygame_sdl2.font.get_init():
@@ -122,10 +128,9 @@ class GameMap(object):
             for y in range(int(self.startYTile), int(self.startYTile + self.numYTiles)):
                 val = self.checkEMap(x, y, zlevel)
                 for z in self.mapdata[zlevel][x][y].content:
-                    if z != None:
-                        if z.selected == True:
-                            self.tiledBG.blit(z.image, ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
-                            self.tiledBG.blit(self.digtileimages[3][0], ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
+                    if z is not None and z.selected:
+                        self.tiledBG.blit(z.image, ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
+                        self.tiledBG.blit(self.digtileimages[3][0], ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
                 if val == 2: #replace this with a big hash of images 
                     image = 0
                     self.tiledBG.blit(self.digtileimages[image][0], ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
@@ -150,7 +155,7 @@ class GameMap(object):
                         val = 9
                 self.tiledBG.blit(self.tileimages[val][0], ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
                 for z in self.mapdata[zlevel][x][y].content:
-                    if z != None:
+                    if z is not None:
                         self.tiledBG.blit(z.image, ((x - self.startXTile) * self.tw, (y - self.startYTile) * self.tw))
 
         return self.tiledBG
@@ -244,20 +249,20 @@ class GameMap(object):
     def get_items_in_queue(self, x, y , z):
         content = self.checkMapContent(x, y, z)
         for item in content:
-            if item.inqueue == True:
+            if item.inqueue:
                 return item
         return None
 
     def get_items(self, x, y , z):
         val = self.checkMapContent(x, y, z)
-        if val == None:
+        if val is None:
             return None
         else:
             return val
 
     def select_items(self, x, y, z):
         val = self.checkMapContent(x, y, z)
-        if val != None:
+        if val is not None:
             for item in val:
                 if item.inqueue == False:
                     item.selected = True
@@ -270,9 +275,9 @@ class GameMap(object):
             for x in range(int(self.startXTile), int(self.startXTile + self.numXTiles)):
                 for y in range(int(self.startYTile), int(self.startYTile + self.numYTiles)):
                     val = self.checkMapContent(x, y, z)
-                    if val != None:
+                    if val is not None:
                         for item in val:
-                            if item.selected == True and item.inqueue == False:
+                            if item.selected and not item.inqueue:
                                 selected.append((x, y, z))
         return selected
 
@@ -316,7 +321,7 @@ class GameMap(object):
                     continue
                 tilevalue = self.mapdata[calc_z][newrow][newcol].value 
                 tileblocked = self.mapdata[calc_z][newrow][newcol].blocked
-                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1) and tileblocked == False: 
+                if (0 <= newrow <= self.mapw - 1 and 0 <= newcol <= self.maph - 1) and not tileblocked: 
                     slist.append((newrow, newcol, calc_z)) # fire the move in the queue
                     if (tilevalue == 7 and calc_z + 1 <= maxz and self.checkMap(newrow, newcol, calc_z + 1) == 5): # up ramp
                         slist.append((newrow, newcol, calc_z + 1))
@@ -331,15 +336,12 @@ class GameMap(object):
         return True
 
     def save_map(self):
-        mapfile = open("./map.dat", "wb")
-        pickle.dump(self.mapdata, mapfile, 2)
-        mapfile.close
-
+        with open("./map.dat", "wb") as mapf:
+            pickle.dump(self.mapdata, mapf, 2)  # FIXME: CANNOT Pickle a Pygame.Surface
 
     def load_map(self):
-        mapfile = open("./map.dat", "rb")
-        self.mapdata = pickle.load(mapfile)
-        mapfile.close
+        with open("./map.dat", "rb") as mapf:
+            self.mapdata = pickle.load(mapfile)
     
     def find_open_spot(self):
         for z in range(self.zlevels):
