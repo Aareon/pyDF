@@ -1,9 +1,8 @@
-try:
-    from loader import load_png
-    import configparser, os
-except ImportError as err:
-    print("couldn't load module. %s" % (err))
-    sys.exit(2)
+import configparser
+import os
+
+from loader import load_png
+
 
 class Cursor():
     """ Cursor class, generic class for a Cursor """
@@ -13,8 +12,9 @@ class Cursor():
         self.mapx = 0
         self.mapy = 0
         config = configparser.ConfigParser()
-        config.read_file(open('cursor.cfg'))
-        sectionname = "imagename" + str(tw)
-        imagename = config.get('cursor', sectionname)
+        with open('cursor.cfg') as f:
+            config.read_file(f)
+        
+        imagename = config.get('cursor', "imagename" + str(tw))
         self.image, self.rect = load_png(imagename)
     
