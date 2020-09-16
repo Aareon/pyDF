@@ -1,8 +1,5 @@
-try:
-    from item import Item
-except ImportError as err:
-    print("couldn't load module. %s" % (err))
-    sys.exit(2)
+from item import Item
+
 
 class MapTile():
     """ MapTile class, generic class for a tile """
@@ -10,10 +7,9 @@ class MapTile():
         self.value = value
         self.content = []
         self.mobs = []
-        if int(self.value) == int(0) or int(self.value) == int(5):
+        self.blocked = False
+        if int(self.value) == 0 or int(self.value) == 5:
             self.blocked = True
-        else:
-            self.blocked = False
 
     def digTile(self, value):
         oldvalue = self.value
@@ -39,7 +35,7 @@ class MapTile():
 
     def pickup(self):
         for item in self.content:
-            if item.selected == True:
+            if item.selected:
                 val = item
                 self.remove(item)
                 return val
