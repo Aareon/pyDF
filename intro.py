@@ -1,13 +1,11 @@
-#!C:\python26\python.exe
 try:
     import pygame_sdl2
-    #from pygame_sdl2 import KEYDOWN, KESCAPE, QUIT, RESIZABLE
     pygame_sdl2.import_as_pygame()
-    import sys
-    #from pygame.locals import *
-except ImportError as err:
-    print("couldn't load module, %s" % (err))
-    sys.exit(2)
+except ImportError:
+    try: import pygame as pygame_sdl2
+    except ImportError:
+        raise
+
 
 class Intro(object):
     """ This will probably be adjusted to be usable for any text screen
@@ -27,7 +25,7 @@ class Intro(object):
 
     def waitForKey(self):
         running = True;
-        while True:
+        while running:
             for event in pygame_sdl2.event.get():
                 if event.type == pygame_sdl2.QUIT:
                     running = False
